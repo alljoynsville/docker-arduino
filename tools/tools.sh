@@ -116,7 +116,7 @@ function at_install_lib() {
             # Normal libary name
             echo -n "Installing library($library): "
             local output
-            output=$(arduino --install-library $library 2>&1)
+            output=$(arduino-cli lib install "${library}" 2>&1)
             if [ $? -ne 0 ]; then
                 echo -e "\xe2\x9c\x96"
                 echo $output
