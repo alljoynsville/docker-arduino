@@ -46,18 +46,6 @@ SHELL ["/bin/bash","-c"]
 # Working directory
 WORKDIR ${A_HOME}
 
-RUN echo ${SSH_KEY_FILE}
-
-ADD ${SSH_KEY_FILE} ${A_HOME}/.ssh/bitbucket
-
-RUN chmod 400 ${A_HOME}/.ssh/bitbucket
-
-RUN echo 'Host *' >> ${A_HOME}/.ssh/config && echo '    User git' >> ${A_HOME}/.ssh/config && \
-    echo '    Hostname bitbucket.org' >> ${A_HOME}/.ssh/config && \
-    echo "    IdentityFile ${A_HOME}/.ssh/bitbucket" >> ${A_HOME}/.ssh/config && \
-    echo '    StrictHostKeyChecking no' >> ${A_HOME}/.ssh/config
-
-RUN cat ${A_HOME}/.ssh/config
 # Get updates and install dependencies
 RUN dpkg --add-architecture i386
 RUN apt-get update && \
@@ -105,13 +93,9 @@ RUN arduino_add_board_url https://adafruit.github.io/arduino-board-index/package
 RUN arduino-cli lib install "Adafruit ZeroTimer Library@1.0.0"
 RUN arduino-cli lib install Sodaq_wdt
 RUN arduino-cli lib install arduino-NVM
-RUN arduino_install_lib git@bitbucket.org:cloudofthings/flashstorage.git,git@bitbucket.org:cloudofthings/dali.git,git@bitbucket.org:cloudofthings/radiohead.git,git@bitbucket.org:cloudofthings/lora_core.git,https://github.com/adafruit/Adafruit_ASFcore.git
+RUN arduino_install_lib git@bitbucket.org:cloudofthings/radiohead.git,https://github.com/adafruit/Adafruit_ASFcore.git
 # Crypto is not only in a specific version it's also not comming from arduino but from platform io packages, 
 # we need to clone, cehckout the version and copy just the directory we need!
 RUN cd /tmp && git clone https://github.com/rweather/arduinolibs.git && cd arduinolibs && \
     git checkout 27ad81051d81e29906c9738a22f1d75ab80c36b0 && \
     mv libraries/Crypto ${A_HOME}/Arduino/libraries
-#arduino doesn't know how to handle src directories, so we'll copy the sources out of src into the root...
-RUN mv ${A_HOME}/Arduino/libraries/lora_core/src/* ${A_HOME}/Arduino/libraries/lora_core/
-#delete the ssh key we need it for building the image only, we don't want it in the image.
-RUN rm -f  ${A_HOME}/.ssh/bitbucket
