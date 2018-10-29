@@ -113,3 +113,5 @@ RUN cd /tmp && git clone https://github.com/rweather/arduinolibs.git && cd ardui
     mv libraries/Crypto ${A_HOME}/Arduino/libraries
 #arduino doesn't know how to handle src directories, so we'll copy the sources out of src into the root...
 RUN mv ${A_HOME}/Arduino/libraries/lora_core/src/* ${A_HOME}/Arduino/libraries/lora_core/
+#delete the ssh key we need it for building the image only, we don't want it in the image.
+RUN rm -f  ${A_HOME}/.ssh/bitbucket
