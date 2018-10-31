@@ -49,10 +49,10 @@ WORKDIR ${A_HOME}
 # Get updates and install dependencies
 RUN dpkg --add-architecture i386
 RUN apt-get update && \
-    apt-get install python-pip wget tar xz-utils git xvfb libc6:i386 libncurses5:i386 libstdc++6:i386 -y && \
+    apt-get install python3-pip wget tar xz-utils git xvfb libc6:i386 libncurses5:i386 libstdc++6:i386 -y && \
     apt-get clean && rm -rf /var/lib/apt/list/*
 
-RUN pip install nrfutil
+RUN pip3 install nrfutil adafruit-nrfutil
 
 # Get and install Arduino IDE
 RUN wget -q https://downloads.arduino.cc/arduino-${ARDUINO_VERSION}-linux64.tar.xz -O arduino.tar.xz && \
@@ -90,10 +90,14 @@ RUN arduino_add_board_url https://adafruit.github.io/arduino-board-index/package
     arduino_install_board adafruit:nrf52 && \
     arduino --pref "compiler.warning_level=all" --save-prefs 2>&1
 
+RUN echo "${A_HOME}/.arduino15/packages" >> "${A_HOME}/arduino_hardware.txt"
+RUN echo "${A_HOME}/.arduino15/packages" >> "${A_HOME}/arduino_tools.txt"
+RUN ls ${A_HOME}
+
 RUN arduino-cli lib install "Adafruit ZeroTimer Library@1.0.0"
 RUN arduino-cli lib install Sodaq_wdt
 RUN arduino-cli lib install arduino-NVM
-RUN arduino_install_lib git@bitbucket.org:cloudofthings/radiohead.git,https://github.com/adafruit/Adafruit_ASFcore.git
+RUN arduino_install_lib https://eyal_cot@bitbucket.org/cloudofthings/radiohead.git,https://github.com/adafruit/Adafruit_ASFcore.git
 # Crypto is not only in a specific version it's also not comming from arduino but from platform io packages, 
 # we need to clone, cehckout the version and copy just the directory we need!
 RUN cd /tmp && git clone https://github.com/rweather/arduinolibs.git && cd arduinolibs && \

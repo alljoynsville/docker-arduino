@@ -1,5 +1,3 @@
-#!/bin/bash
-
 #
 #   Tools for Docker-arduino image
 #
@@ -9,7 +7,7 @@ AT_HARDWARE="arduino_hardware.txt"
 AT_TOOLS="arduino_tools.txt"
 AT_DEF_PLATFORMS=(arduino:avr:uno arduino:avr:mega:cpu=atmega2560 arduino:avr:nano:cpu=atmega328)
 AT_SHOW_RESULT=0
-AT_ADDITIONAL_ARGS=""
+AT_ADDITIONAL_ARGS="${AT_ADDITIONAL_ARGS}"
 
 # Check if url has specified extension
 function url_check_ext() {
@@ -187,9 +185,9 @@ function at_build_sketch() {
         
         for hw in "${hardware[@]}"; do
             if [ "${hardware_str}" = "" ]; then
-                hardware_str="-tools ${hw}"
+                hardware_str="-hardware ${hw}"
             else
-                hardware_str="$hardware_str -tools $hw"
+                hardware_str="$hardware_str -hardware $hw"
             fi
         done
     fi
@@ -225,7 +223,7 @@ function at_build_sketch() {
     echo "Sketch: $sketch_name"
     for board in ${platforms[*]}; do
         echo -n "   $board: "
-        output=$(arduino-builder -hardware ${ARDUINO_HARDWARE} -hardware $HOME/Arduino/hardware ${hardware_str} -tools ${ARDUINO_TOOLS}/avr -tools ${ARDUINO_TOOLS_BUILDER} -tools $HOME/Arduino/tools ${tools_str} -libraries ${ARDUINO_LIBS} -libraries $HOME/Arduino/libraries ${AT_ADDITIONAL_ARGS} -fqbn $board $1 2>&1)
+        output=$(arduino-builder -verbose -hardware ${ARDUINO_HARDWARE} -hardware $HOME/Arduino/hardware ${hardware_str} -tools ${ARDUINO_TOOLS}/avr -tools ${ARDUINO_TOOLS_BUILDER} -tools $HOME/Arduino/tools ${tools_str} -libraries ${ARDUINO_LIBS} -libraries $HOME/Arduino/libraries ${AT_ADDITIONAL_ARGS} -fqbn $board $1 2>&1)
         if [ $? -ne 0 ]; then
             echo -e "\xe2\x9c\x96"
             if [ "$output" != "" ]; then
