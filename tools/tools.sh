@@ -8,6 +8,7 @@ AT_TOOLS="arduino_tools.txt"
 AT_DEF_PLATFORMS=(arduino:avr:uno arduino:avr:mega:cpu=atmega2560 arduino:avr:nano:cpu=atmega328)
 AT_SHOW_RESULT=0
 AT_ADDITIONAL_ARGS="${AT_ADDITIONAL_ARGS}"
+AT_BUILD_DIR_NAME_EXTRA="${AT_BUILD_DIR_NAME_EXTRA}"
 
 # Check if url has specified extension
 function url_check_ext() {
@@ -220,10 +221,13 @@ function at_build_sketch() {
 
     local output
     local result=0
+    rm -rf /tmp/arduino_build_* 2>/dev/null
     echo "Sketch: $sketch_name"
     for board in ${platforms[*]}; do
         echo -n "   $board: "
-        output=$(arduino-builder -verbose -hardware ${ARDUINO_HARDWARE} -hardware $HOME/Arduino/hardware ${hardware_str} -tools ${ARDUINO_TOOLS}/avr -tools ${ARDUINO_TOOLS_BUILDER} -tools $HOME/Arduino/tools ${tools_str} -libraries ${ARDUINO_LIBS} -libraries $HOME/Arduino/libraries ${AT_ADDITIONAL_ARGS} -fqbn $board $1 2>&1)
+        build_dir_name="/tmp/arduino_build_${board}_${AT_BUILD_DIR_NAME_EXTRA}"
+	mkdir -p "${build_dir_name}" 2>/dev/null
+        output=$(arduino-builder -build-path "${build_dir_name}" -verbose -hardware ${ARDUINO_HARDWARE} -hardware $HOME/Arduino/hardware ${hardware_str} -tools ${ARDUINO_TOOLS}/avr -tools ${ARDUINO_TOOLS_BUILDER} -tools $HOME/Arduino/tools ${tools_str} -libraries ${ARDUINO_LIBS} -libraries $HOME/Arduino/libraries ${AT_ADDITIONAL_ARGS} -fqbn $board $1 2>&1)
         if [ $? -ne 0 ]; then
             echo -e "\xe2\x9c\x96"
             if [ "$output" != "" ]; then
