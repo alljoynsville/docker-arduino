@@ -9,6 +9,7 @@ AT_DEF_PLATFORMS=(arduino:avr:uno arduino:avr:mega:cpu=atmega2560 arduino:avr:na
 AT_SHOW_RESULT=0
 AT_ADDITIONAL_ARGS="${AT_ADDITIONAL_ARGS}"
 AT_BUILD_DIR_NAME_EXTRA="${AT_BUILD_DIR_NAME_EXTRA}"
+AT_PLATFORM_NAMES_MAP="arduino_names_map.txt"
 
 # Check if url has specified extension
 function url_check_ext() {
@@ -176,7 +177,16 @@ function at_build_sketch() {
             platforms=${AT_DEF_PLATFORMS[@]}
         fi
     fi
-
+    local hashed_names_map
+    declare -A hashed_names_map
+    local names_map=()
+    if [ -f $HOME/$AT_PLATFORM_NAMES_MAP ]; then
+            readarray -t names_map < "$HOME/$AT_PLATFORM_NAMES_MAP"
+            for((i=0; i<${#names_map[*]}; i+=2)); do
+                key=$(echo ${names_map[$i]}|sha1sum -|cut -f1 -d ' ')
+                hashed_names_map["${key}"]="${names_map[$((i+1))]}"
+            done
+    fi 
     # Check if we have to include other hardware folders
     local hardware
     local hardware_str=""
@@ -223,9 +233,16 @@ function at_build_sketch() {
     local result=0
     rm -rf /tmp/arduino_build_* 2>/dev/null
     echo "Sketch: $sketch_name"
+    local board_name=""
     for board in ${platforms[*]}; do
         echo -n "   $board: "
-        build_dir_name="/tmp/arduino_build_${board}_${AT_BUILD_DIR_NAME_EXTRA}"
+        board_name="$board"
+        local board_hashed=$(echo $board|sha1sum -|cut -f1 -d ' ')
+        override_name="${hashed_names_map[$board_hashed]}"
+        if [ "$override_name" != "" ] ;then
+           board_name="${override_name}"
+        fi
+        build_dir_name="/tmp/arduino_build_${board_name}_${AT_BUILD_DIR_NAME_EXTRA}"
 	mkdir -p "${build_dir_name}" 2>/dev/null
         output=$(arduino-builder -build-path "${build_dir_name}" -verbose -hardware ${ARDUINO_HARDWARE} -hardware $HOME/Arduino/hardware ${hardware_str} -tools ${ARDUINO_TOOLS}/avr -tools ${ARDUINO_TOOLS_BUILDER} -tools $HOME/Arduino/tools ${tools_str} -libraries ${ARDUINO_LIBS} -libraries $HOME/Arduino/libraries ${AT_ADDITIONAL_ARGS} -fqbn $board $1 2>&1)
         if [ $? -ne 0 ]; then
