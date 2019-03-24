@@ -97,6 +97,7 @@ RUN ls ${A_HOME}
 RUN arduino-cli lib install "Adafruit ZeroTimer Library@1.0.0"
 RUN arduino-cli lib install Sodaq_wdt
 RUN arduino-cli lib install arduino-NVM
+RUN arduino-cli lib install EmonLib
 RUN arduino_install_lib https://eyal_cot@bitbucket.org/cloudofthings/radiohead.git,https://github.com/adafruit/Adafruit_ASFcore.git
 # Crypto is not only in a specific version it's also not comming from arduino but from platform io packages, 
 # we need to clone, cehckout the version and copy just the directory we need!
