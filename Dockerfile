@@ -38,7 +38,9 @@ ENV A_TOOLS_DIR="/opt/tools"
 # Home directory
 ENV A_HOME="/root"
 
-ENV A_ARDUINO_CLI_NAME="arduino-cli-0.3.1-alpha.preview-linux64"
+ENV A_ARDUINO_CLI_NAME="arduino-cli-0.3.6-alpha.preview-linux64"
+
+ENV USER root
 
 # Shell
 SHELL ["/bin/bash","-c"]
@@ -55,7 +57,8 @@ RUN apt-get update && \
 RUN pip3 install nrfutil adafruit-nrfutil
 
 # Get and install Arduino IDE
-RUN wget -q https://downloads.arduino.cc/arduino-${ARDUINO_VERSION}-linux64.tar.xz -O arduino.tar.xz && \
+RUN echo getting version : ${ARDUINO_VERSION} && \
+	wget -q https://downloads.arduino.cc/arduino-${ARDUINO_VERSION}-linux64.tar.xz -O arduino.tar.xz && \
     tar -xf arduino.tar.xz && \
     rm arduino.tar.xz && \
     mv arduino-${ARDUINO_VERSION} ${ARDUINO_DIR} && \
@@ -87,7 +90,7 @@ RUN arduino_add_board_url https://adafruit.github.io/arduino-board-index/package
     arduino_install_board esp8266:esp8266 && \
     arduino_install_board adafruit:avr && \
     arduino_install_board adafruit:samd && \
-    arduino_install_board adafruit:nrf52 && \
+    arduino_install_board adafruit:nrf52:0.8.6 && \
     arduino --pref "compiler.warning_level=all" --save-prefs 2>&1
 
 RUN echo "${A_HOME}/.arduino15/packages" >> "${A_HOME}/arduino_hardware.txt"
